@@ -26,8 +26,8 @@
 
 
   # Models
-  require './models/song'
-
+  # require './models/song'
+  require './models/user'
 
   # Routes
   #Got the first route from rails maybe need to incorporate it ino the second route
@@ -39,41 +39,73 @@
     end
   end
 
-
-  get '/api/songs' do
-    content_type :json
-    songs = Song.all
-    songs.to_json
+  get '/' do
+    if current_user
+      "You are logged in"
+    else
+      "Please log in"
+    end
   end
 
-  get '/api/songs/:id' do
-    content_type :json
-    song = Song.find(params[:id].to_i)
-    song.to_json
+  post '/users' do
+    user = User.new(params[:user])
+    user.password = params[:password]  # Setting: Doing the hashing
+    user.save!  # save in place
+    redirect '/'
   end
 
-  post '/api/songs' do
-    content_type :json
-    song = Song.create(params[:song])
-    song.to_json
+  # Sign-In
+  post '/sessions' do
+    user = User.find_by(username: params[:username])
+    if (user.password == params[:password])  # Does the password match?
+      session[:current_user] = user.id
+      redirect '/' # Authenticated
+    else
+      redirect '/' # Not Authenticated
+    end
   end
 
-  put '/api/songs/:id' do
-    content_type :json
-    song = Song.find(params[:id].to_i)
-    song.update(params[:song])
-    song.to_json
+  # Log-out
+  delete '/sessions' do
+    session[:current_user] = nil
+    redirect '/'
   end
 
-  patch '/api/songs/:id' do
-    content_type :json
-    song = Song.find(params[:id].to_i)
-    song.update(params[:song])
-    song.to_json
-  end
 
-  delete '/api/songs/:id' do
-    content_type :json
-    Song.delete(params[:id].to_i)
-    {message: 'Success'}.to_json
-  end
+  # get '/api/songs' do
+  #   content_type :json
+  #   songs = Song.all
+  #   songs.to_json
+  # end
+  #
+  # get '/api/songs/:id' do
+  #   content_type :json
+  #   song = Song.find(params[:id].to_i)
+  #   song.to_json
+  # end
+  #
+  # post '/api/songs' do
+  #   content_type :json
+  #   song = Song.create(params[:song])
+  #   song.to_json
+  # end
+  #
+  # put '/api/songs/:id' do
+  #   content_type :json
+  #   song = Song.find(params[:id].to_i)
+  #   song.update(params[:song])
+  #   song.to_json
+  # end
+  #
+  # patch '/api/songs/:id' do
+  #   content_type :json
+  #   song = Song.find(params[:id].to_i)
+  #   song.update(params[:song])
+  #   song.to_json
+  # end
+  #
+  # delete '/api/songs/:id' do
+  #   content_type :json
+  #   Song.delete(params[:id].to_i)
+  #   {message: 'Success'}.to_json
+  # end
